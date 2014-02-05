@@ -3,11 +3,16 @@ $(function() {
     var STABLE_THRESHOLD = 10;
     var SUPER_STABLE_THRESHOLD = 1;
 
+    var supportsVibrate = "vibrate" in navigator;
+
     var waitingForDraw = false;
     var midDraw = false;
     var waitingForFire = false;
 
     var currentAcceleration;
+
+    var gun_player = document.getElementById('gun-player');
+    var cock_player = document.getElementById('cock-player');
 
     gameStart({timeUntilDraw: 2500});
 
@@ -60,7 +65,7 @@ $(function() {
             }
         }
         else {
-            
+
         }
     }
 
@@ -84,18 +89,25 @@ $(function() {
 
         waitingForDraw = true;
         $('#draw-text').html('DRAW!');
+        if (supportsVibrate) {
+            navigator.vibrate(200);
+        }
         // play a damn sound too
     }
 
     // called when the draw is finished by user 
     function drawMotionPerformed() {
         $('#draw-text').html('FIRE!');
+        cock_player.play();
     }
 
     // called when user successfully fires gun
     function fireTouchPerformed() {
-        // should make a gun sound
         $('#draw-text').html('POW');
+        gun_player.play();
+        if (supportsVibrate) {
+            navigator.vibrate(200);
+        }
 
         // then send an event to the server
     }
