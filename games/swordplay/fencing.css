@@ -9,3 +9,53 @@ body {
     text-align: center;
     width: 100%;
 }
+
+#parent{
+	display: table;
+	height:100%;
+	width:100%;
+}
+
+#logo{
+	visibility: visible;
+	position:absolute;
+	top:0;
+	bottom:0;
+	height:90%;
+	width:90%;
+	padding:5%;
+	fill: #FF00FF; 
+}
+#sword{
+	visibility: hidden;
+	position:absolute;
+	top:0;
+	bottom:0;
+	height:90%;
+	width:90%;
+	padding:5%;
+	fill: #FF00FF; 
+}
+#shield{
+	visibility: hidden;
+	position:absolute;
+	top:0;
+	bottom:0;
+	height:90%;
+	width:90%;
+	padding:5%;
+	fill: #FF00FF; 
+}
+#circle_container{
+	visibility: visible;
+	position:absolute;
+	top:0;
+	bottom:0;
+	height:90%;
+	width:90%;
+	padding:5%;
+}
+
+#circle{
+	fill: #FF00FF; 
+}

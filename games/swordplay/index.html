@@ -5,8 +5,20 @@
     <link rel="stylesheet" href="./fencing.css">
 </head>
 <body>
-    <div id="draw-text">FENCING ...</div>
-    <button id="start_button">FENCE!</button>
+    <p id="parent">
+		<svg id="circle_container" xmlns="http://www.w3.org/2000/svg" version="1.1">
+			<circle id="circle" cx="50%" cy="50%" r="0"stroke-width="0" />
+		</svg>
+	    <object id="logo" data="game_assets/logo.svg" type="image/svg+xml">
+	  		<img src="game_assets/logo.png" />
+		</object>
+	    <object id="sword" data="game_assets/sword.svg" type="image/svg+xml">
+	  		<img src="game_assets/sword.png" />
+		</object>
+	    <object id="shield" data="game_assets/shield.svg" type="image/svg+xml">
+	  		<img src="game_assets/shield.png" />
+		</object>
+	</p>
 
     <script src="./jquery.min.js"></script>
     <script src="./fencing.js"></script>

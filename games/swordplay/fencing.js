@@ -82,13 +82,21 @@ $(function(){
         }, 100);
     };
 
-    $("#start_button").on("click", startGame);
+    $("#parent").click(startGame);
 
     function startGame(){
         console.log(currentOrientation);
         console.log("waiting for guard");
+    	var circleInterval = setInterval(loadingCircle, 30);
+    	$("#sword").css({'visibility':'hidden'});
+    	$("#shield").css({'visibility':'visible'});
+    	$("#logo").css({'visibility':'hidden'});
+
         waitForGuardPosition(function(){
             console.log("guard logged, now poke");
+    		$("#sword").css({'visibility':'visible'});
+    		$("#shield").css({'visibility':'hidden'});
+    		$("#logo").css({'visibility':'hidden'});
             waitForPokePosition(function(){
                 console.log("poke logged");
                 console.log("poke " + pokeOrientation.beta + " " + pokeOrientation.gamma);
@@ -99,7 +107,8 @@ $(function(){
 			    	moveCounter = moveCounter + event.acceleration.y * event.interval * 0.001;
 			    }; 
 			    setInterval(checkMovement, 10);
-
+			    clearInterval(circleInterval);
+			    $("#circle").attr("r", 0);
             });
         });  
     }
@@ -110,9 +119,15 @@ $(function(){
         currentOrientation.gamma = event.gamma;
     	if(Math.abs((currentOrientation.gamma - pokeOrientation.gamma) % 180) < checkThreshold && Math.abs((currentOrientation.beta - pokeOrientation.beta) % 180) < checkThreshold){
     		console.log("in poke");
+    		$("#sword").css({'visibility':'visible'});
+    		$("#shield").css({'visibility':'hidden'});
+    		$("#logo").css({'visibility':'hidden'});
     	}
     	else if(Math.abs((currentOrientation.gamma - guardOrientation.gamma) % 180) < checkThreshold && Math.abs((currentOrientation.beta - guardOrientation.beta) % 180) < checkThreshold){
     		console.log("in guard");
+    		$("#shield").css({'visibility':'visible'});
+    		$("#sword").css({'visibility':'hidden'});
+    		$("#logo").css({'visibility':'hidden'});
     	}
     }
 	
@@ -127,5 +142,11 @@ $(function(){
     	}
     	console.log("moveCounter: " + moveCounter);
     	console.log("position: " + position);
+    }
+
+    var angle = 0;
+    function loadingCircle(){
+    	$("#circle").attr("r", (Math.abs(Math.sin(angle) * 500)) + 50);
+    	angle = angle + Math.PI / 180;
     }
 });
