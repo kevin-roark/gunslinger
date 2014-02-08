@@ -1,100 +1,131 @@
-$(function() {
+$(function(){
     var supportsVibrate = "vibrate" in navigator;
     var waitTime = 5000;
-    var waitThreshold = 10;
-
-    window.addEventListener('touchstart', function(event) {
-        
-        console.log("touchstart")
-    }, false);
-
-    window.addEventListener('touchend', function(event) {
-        console.log("touchend");
-
-    }, false);
+    var waitThreshold = 30;
+    var checkThreshold = 45;
+    var moveThreshold = 0.5;
 
     var lastOrientation = {};
     var currentOrientation = {};
     var guardOrientation = {};
     var pokeOrientation = {};
 
-    function onDeviceOrientationChange(event) {
-        lastOrientation.gamma = event.gamma;
-        lastOrientation.beta = event.beta;
-        if (event.webkitCompassHeading != undefined) { 
-            lastOrientation.currentHeading = (360 - event.webkitCompassHeading);
-        } else if (event.alpha != null) {
-            lastOrientation.currentHeading =  (270 - event.alpha) * -1; 
-        } else {
-            lastOrientation.currentHeading = null;
-        }
-        console.log("gamma: " + lastOrientation.gamma);
-    };
+    var position = 0;
+    var moveCounter = 0;
 
     window.ondeviceorientation = function(event){
-        console.log(event.alpha);
+        //console.log(event.alpha);
         //console.log("beta: " + event.beta);
         //console.log(event.gamma);
         currentOrientation.alpha = event.alpha;
         currentOrientation.beta = event.beta;
         currentOrientation.gamma = event.gamma;
-
     }
 
-    function waitForGuardPosition() {
+    
+
+    function waitForGuardPosition(callback) {
         var elapsed = 0;
         var start = new Date().getTime();
         var lastBeta = currentOrientation.beta;
         var lastGamma = currentOrientation.gamma;
         var currentBeta = currentOrientation.beta;
         var currentGamma = currentOrientation.gamma;
-        while(elapsed < waitTime){
-            elapsed = new Date().getTime() - start;
-            currentBeta = currentOrientation.beta;
-            currentGamma = currentOrientation.gamma;
-            if(elapsed >= waitTime && (Math.abs(currentGamma - lastGamma) < waitThreshold) && (Math.abs(currentBeta - lastBeta) < waitThreshold)){
-                guardOrientation.beta = currentOrientation.beta;
-                guardOrientation.gamma = currentOrientation.gamma;
-                return;
+        
+        var guardIntervalId = setInterval(function(){
+            if(elapsed < waitTime){
+                elapsed = new Date().getTime() - start;
+                currentBeta = currentOrientation.beta;
+                currentGamma = currentOrientation.gamma;
+                if(elapsed >= waitTime && (Math.abs(currentGamma - lastGamma) < waitThreshold) && (Math.abs(currentBeta - lastBeta) < waitThreshold)){
+                    guardOrientation.beta = currentOrientation.beta;
+                    guardOrientation.gamma = currentOrientation.gamma;
+                    clearInterval(guardIntervalId);
+                    callback();
+                }
+                else if((Math.abs(currentGamma - lastGamma) >= waitThreshold) || (Math.abs(currentBeta - lastBeta) >= waitThreshold)){
+                    start = new Date().getTime();
+                    lastBeta = currentOrientation.beta;
+        			lastGamma = currentOrientation.gamma;
+        			console.log("moved");
+                }
             }
-            else if((Math.abs(currentGamma - lastGamma) >= waitThreshold) || (Math.abs(currentBeta - lastBeta) >= waitThreshold)){
-                start = new Date().getTime();
-            }
-        }
+        }, 100);
+
     };
 
-    function waitForPokePosition() {
+    function waitForPokePosition(callback) {
         var elapsed = 0;
         var start = new Date().getTime();
         var lastBeta = currentOrientation.beta;
         var lastGamma = currentOrientation.gamma;
         var currentBeta = currentOrientation.beta;
         var currentGamma = currentOrientation.gamma;
-        while(elapsed < waitTime){
-            elapsed = new Date().getTime() - start;
-            currentBeta = currentOrientation.beta;
-            currentGamma = currentOrientation.gamma;
-            if(elapsed >= waitTime && (Math.abs(currentGamma - lastGamma) < waitThreshold) && (Math.abs(currentBeta - lastBeta) < waitThreshold)){
-                pokeOrientation.beta = currentOrientation.beta;
-                pokeOrientation.gamma = currentOrientation.gamma;
-                return;
+        var pokeIntervalId = setInterval(function(){
+            if(elapsed < waitTime){
+                elapsed = new Date().getTime() - start;
+                currentBeta = currentOrientation.beta;
+                currentGamma = currentOrientation.gamma;
+                if(elapsed >= waitTime && (Math.abs(currentGamma - lastGamma) < waitThreshold) && (Math.abs(currentBeta - lastBeta) < waitThreshold)){
+                    pokeOrientation.beta = currentOrientation.beta;
+                    pokeOrientation.gamma = currentOrientation.gamma;
+                    clearInterval(currentGamma);
+                    callback();
+                }
+                else if((Math.abs(currentGamma - lastGamma) >= waitThreshold) || (Math.abs(currentBeta - lastBeta) >= waitThreshold)){
+                    start = new Date().getTime();
+                    lastBeta = currentOrientation.beta;
+        			lastGamma = currentOrientation.gamma;
+        			console.log("moved");
+                }
             }
-            else if((Math.abs(currentGamma - lastGamma) >= waitThreshold) || (Math.abs(currentBeta - lastBeta) >= waitThreshold)){
-                start = new Date().getTime();
-            }
-        }
+        }, 100);
     };
 
     $("#start_button").on("click", startGame);
 
     function startGame(){
         console.log(currentOrientation);
-        waitForGuardPosition();
-        console.log("guard logged, now poke");
-        waitForPokePosition();
-        console.log("poke logged");
-        console.log("poke " + pokeOrientation.beta + " " + pokeOrientation.gamma);
-        console.log("guard " + guardOrientation.beta + " " + guardOrientation.gamma);
-        console.log(currentOrientation);
+        console.log("waiting for guard");
+        waitForGuardPosition(function(){
+            console.log("guard logged, now poke");
+            waitForPokePosition(function(){
+                console.log("poke logged");
+                console.log("poke " + pokeOrientation.beta + " " + pokeOrientation.gamma);
+                console.log("guard " + guardOrientation.beta + " " + guardOrientation.gamma);
+                console.log(currentOrientation);
+                window.ondeviceorientation = detectPosition;
+                window.ondevicemotion = function(event){
+			    	moveCounter = moveCounter + event.acceleration.y * event.interval * 0.001;
+			    }; 
+			    setInterval(checkMovement, 10);
+
+            });
+        });  
+    }
+
+    function detectPosition(event){
+        currentOrientation.alpha = event.alpha;
+        currentOrientation.beta = event.beta;
+        currentOrientation.gamma = event.gamma;
+    	if(Math.abs((currentOrientation.gamma - pokeOrientation.gamma) % 180) < checkThreshold && Math.abs((currentOrientation.beta - pokeOrientation.beta) % 180) < checkThreshold){
+    		console.log("in poke");
+    	}
+    	else if(Math.abs((currentOrientation.gamma - guardOrientation.gamma) % 180) < checkThreshold && Math.abs((currentOrientation.beta - guardOrientation.beta) % 180) < checkThreshold){
+    		console.log("in guard");
+    	}
+    }
+	
+    function checkMovement(){
+    	if(moveCounter > moveThreshold){
+    		position++;
+    		moveCounter = 0;
+    	}
+    	else if(moveCounter < -moveThreshold){
+    		position--;
+    		moveCounter = 0;
+    	}
+    	console.log("moveCounter: " + moveCounter);
+    	console.log("position: " + position);
     }
 });
